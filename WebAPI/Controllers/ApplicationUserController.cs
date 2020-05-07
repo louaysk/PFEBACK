@@ -43,7 +43,7 @@ namespace WebAPI.Controllers
             _userManager.Users
                 .Where(x => x.Id != userId)
                 .ToList()
-                .ForEach(x => users.Add(new UserAddDto(x.Id,x.FullName, x.Email, x.PhoneNumber, x.UserName)));
+                .ForEach(x => users.Add(new UserAddDto(x.Id,x.FirstName,x.lastName, x.Email, x.PhoneNumber, x.UserName)));
             return Ok(users);
         }
 
@@ -53,10 +53,31 @@ namespace WebAPI.Controllers
         //POST : /api/ApplicationUser/Register/Admin
         public async Task<Object> PostApplicationUser(RegisterUserModel model)
         {
+            List<string> error = new List<string>();
+            if (!ModelState.IsValid)
+            {
+                ModelState.Root.Children.ToList().ForEach(x =>
+                {
+                    x.Errors.ToList().ForEach(y =>
+                        error.Add(y.ErrorMessage)
+                    );
+                });
+                return BadRequest(error);
+
+                 
+
+
+
+
+
+            }
             var applicationUser = new ApplicationUser() {
                 UserName = model.UserName,
                 Email = model.Email,
-                FullName = model.FullName,
+                FirstName = model.FirstName,
+                lastName = model.lastName,
+                PhoneNumber = model.PhoneNumber,
+                
                 IsActive = true
             };
 
@@ -91,7 +112,7 @@ namespace WebAPI.Controllers
         //Put : /api/ApplicationUser/ChangeToGlobal/{username}
         [Authorize(Roles = "GlobalAdmin,Admin")]
         [HttpPut("ChangeToGlobal/{username}")]
-        public async Task<IActionResult> ChangeToSuper(string username)
+        public async Task<IActionResult> ChangeToGlobal(string username)
         {
             var user = await _userManager.Users.SingleOrDefaultAsync(c => c.UserName == username);
             if (user == null)
@@ -118,8 +139,42 @@ namespace WebAPI.Controllers
             }
         }
 
+
+
+        //Put : /api/ApplicationUser/ChangeToAdmin/{username}
+        [Authorize(Roles = "GlobalAdmin,Admin")]
+        [HttpPut("ChangeToAdmin/{username}")]
+        public async Task<IActionResult> ChangeToAdmin(string username)
+        {
+            var user = await _userManager.Users.SingleOrDefaultAsync(c => c.UserName == username);
+            if (user == null)
+            {
+                return BadRequest();
+            }
+            try
+            {
+                List<string> roles = new List<string>();
+                roles.Add("GlobalAdmin");
+                roles.Add("Admin");
+
+                await _userManager.RemoveFromRolesAsync(user, roles);
+                await _userManager.AddToRoleAsync(user, "Admin");
+                //user.Role = "GlobalAdmin";
+                await _userManager.UpdateAsync(user);
+
+                var adminrole = await _userManager.GetRolesAsync(user);
+                return Ok(adminrole);
+            }
+            catch
+            {
+                return NoContent();
+            }
+        }
+
+
+
         //Put : /api/ApplicationUser/Edit
-        [Authorize(Roles = "Admin,GlobalAdmin")]
+        [Authorize(Roles = "GlobalAdmin")]
         [HttpPut("Edit/{id}")]
         public async Task<IActionResult> Edit(string id, ApplicationUser admin)
         {
@@ -139,9 +194,12 @@ namespace WebAPI.Controllers
                 {
                     user.Email = admin.Email;
                 }
-                if (!string.IsNullOrEmpty(admin.FullName))
+                if (!string.IsNullOrEmpty(admin.FirstName))
                 {
-                    user.FullName = admin.FullName;
+                    user.FirstName = admin.FirstName;
+                }if (!string.IsNullOrEmpty(admin.lastName))
+                {
+                    user.lastName = admin.lastName;
                 }
                 if (!string.IsNullOrEmpty(admin.PhoneNumber))
                 {
@@ -202,7 +260,8 @@ namespace WebAPI.Controllers
                     {
                         new Claim("UserID",user.Id.ToString()),
                         new Claim("UserName",user.UserName),
-                        new Claim("FullName",user.FullName),
+                        new Claim("FirstName",user.FirstName),
+                        new Claim("LastName",user.lastName),
                         new Claim(_options.ClaimsIdentity.RoleClaimType,role.FirstOrDefault())
                     }),
                     Expires = DateTime.UtcNow.AddDays(1),

@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Swashbuckle.AspNetCore.Filters;
 using WebAPI.Models;
 
 namespace WebAPI
@@ -36,11 +37,11 @@ namespace WebAPI
             services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
 
             services.AddControllers();
-            services.AddSwaggerGen(c =>
-            {
-                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+           // services.AddSwaggerGen(c =>
+           // {
+              //  c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
 
-            });
+           // });
 
             services.AddDbContext<CrayonContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
@@ -57,9 +58,9 @@ namespace WebAPI
             {
                 options.Password.RequireDigit = false;
                 options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireUppercase = false;
-                options.Password.RequiredLength = 4;
+                options.Password.RequireLowercase = true;
+                options.Password.RequireUppercase = true;
+                options.Password.RequiredLength = 8;
             }
             );
 
@@ -85,6 +86,24 @@ namespace WebAPI
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
                 };
+            });
+
+            //Register the Swagger generator, defining 1 or more Swagger documents
+            services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+
+
+                c.AddSecurityDefinition("oauth2", new OpenApiSecurityScheme
+                {
+                    Type = SecuritySchemeType.Http,
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Scheme = "bearer",
+                    Description = "Please enter a valid bearer Token"
+                });
+                c.OperationFilter<SecurityRequirementsOperationFilter>();
             });
         }
 

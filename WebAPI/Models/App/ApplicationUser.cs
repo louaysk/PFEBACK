@@ -10,7 +10,9 @@ namespace WebAPI.Models
     public class ApplicationUser : IdentityUser
     {
         [Column(TypeName ="nvarchar(150)")]
-        public string FullName { get; set; }
+        public string FirstName { get; set; }
+        public string lastName { get; set; }
+        
         public bool IsActive { get; set; }
         //public string Role { get; set; }
     }

@@ -32,7 +32,8 @@ namespace WebAPI.Controllers
             return new
             {
                 user.Id,
-                user.FullName,
+                user.FirstName,
+                user.lastName,
                 user.Email,
                 user.UserName,
                 user.PhoneNumber,
