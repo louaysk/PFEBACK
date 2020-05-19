@@ -16,6 +16,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Newtonsoft.Json.Serialization;
 using Swashbuckle.AspNetCore.Filters;
 using WebAPI.Models;
 
@@ -36,12 +37,17 @@ namespace WebAPI
             //Inject AppSettings
             services.Configure<ApplicationSettings>(Configuration.GetSection("ApplicationSettings"));
 
-            services.AddControllers();
-           // services.AddSwaggerGen(c =>
-           // {
-              //  c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+            services.AddControllers().AddNewtonsoftJson(o=> {
+                o.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                o.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            });
+            
 
-           // });
+            // services.AddSwaggerGen(c =>
+            // {
+            //  c.SwaggerDoc("v1", new OpenApiInfo { Title = "My API", Version = "v1" });
+
+            // });
 
             services.AddDbContext<CrayonContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
