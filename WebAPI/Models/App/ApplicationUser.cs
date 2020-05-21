@@ -14,7 +14,10 @@ namespace WebAPI.Models
         public string lastName { get; set; }
         
         public bool IsActive { get; set; }
-       
+        public virtual ICollection<IdentityUserRole<string>> Roles { get; set; }
+        public virtual ICollection<IdentityUserClaim<string>> Claims { get; set; }
+
+
 
 
     }

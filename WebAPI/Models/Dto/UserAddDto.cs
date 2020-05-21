@@ -14,11 +14,11 @@ namespace WebAPI.Models.Dto
         public string Email { get; set; }
         public string UserName { get; set; }
         public string PhoneNumber { get; set; }
-        public string role { get; set; }
+        public List<string> role { get; set; }
 
        
 
-        public UserAddDto(string id ,string f,string l, string e, string p, string u,string role)
+        public UserAddDto(string id ,string f,string l, string e, string p, string u,List<string> role)
         {
             this.Id = id;
             this.Firstname = f;

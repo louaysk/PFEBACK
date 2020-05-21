@@ -1,20 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Dynamic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WebAPI.Models;
-using WebAPI.Models.Dto;
 
 namespace WebAPI.Controllers
 {
@@ -22,42 +19,95 @@ namespace WebAPI.Controllers
     [ApiController]
     public class ApplicationUserController : ControllerBase
     {
+
+        private readonly CrayonContext _context;
         private UserManager<ApplicationUser> _userManager;
         private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
 
-        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings)
+        public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, CrayonContext context)
         {
             _userManager = userManager;
             _singInManager = signInManager;
             _appSettings = appSettings.Value;
+            _context = context;
+        }
+
+
+        public class Users_in_Role_ViewModel
+        {
+            public string UserId { get; set; }
+            public string Username { get; set; }
+            public string Email { get; set; }
+            public string Role { get; set; }
+            public string PhoneNumber { get; set; }
+            public string FirstName { get; set; }
+            public string lastName { get; set; }
+
         }
 
 
         [Authorize(Roles = "GlobalAdmin,Admin")]
         [HttpGet("GetAdmins")]
         //Get : /api/ApplicationUser/GetAdmins
-        public ActionResult<ApplicationUser> getAdmin()
+        public IEnumerable<Users_in_Role_ViewModel> GetUserwithRole()
         {
 
-            string userId = User.Claims.First(c => c.Type == "UserID").Value;
-           // var users = _userManager.GetUsersInRoleAsync("Admin").Result;          
 
-            var users = new List<UserAddDto>();
-              _userManager.Users
-               .Where(x => x.Id != userId)
-             .ToList()
-            .ForEach(x => {
-              var roles = _userManager.GetRolesAsync(x);
-              var role = roles.Result.First();
-               users.Add(new UserAddDto(x.Id, x.FirstName, x.lastName, x.Email, x.PhoneNumber, x.UserName, role));
-                 });
-            return Ok(users);
+            var usersWithRoles = (from user in _context.Users
+                                  select new
+                                  {
+                                      UserId = user.Id,
+                                      Username = user.UserName,
+                                      FirstName = user.FirstName,
+                                      lastName = user.lastName,
+                                      PhoneNumber = user.PhoneNumber,
+
+                                      Email = user.Email,
+                                      RoleNames = (from userRole in user.Roles
+                                                   join role in _context.Roles on userRole.RoleId
+                                                   equals role.Id
+                                                   select role.Name).ToList()
+                                  }).ToList().Select(p => new Users_in_Role_ViewModel()
+
+                                  {
+                                      UserId = p.UserId,
+                                      Username = p.Username,
+                                      FirstName = p.FirstName,
+                                      lastName = p.lastName,
+                                      PhoneNumber = p.PhoneNumber,
+                                      Email = p.Email,
+                                      Role = string.Join(",", p.RoleNames)
+                                  });
+
+
+
+            return usersWithRoles;
+
+
+
+
+            // List<string> roles = new List<string>();
+
+            //  string userId = User.Claims.First(c => c.Type == "UserID").Value;
+            // var users = _userManager.GetUsersInRoleAsync("Admin").Result;          
+
+            // var users = new List<UserAddDto>();
+            // _userManager.Users
+            //  .Where(x => x.Id != userId)
+            // .ToList()
+            // .ForEach( x => {
+            //    var data= _userManager.GetRolesAsync(x);
+            //  roles.Add(data.ToString());
+            //var role = roles.Result.First();
+            //  users.Add(new UserAddDto(x.Id, x.FirstName, x.lastName, x.Email, x.PhoneNumber, x.UserName, roles));
+            //   });
+            // return Ok(users);
 
 
         }
 
-    
+
 
 
         [HttpPost]

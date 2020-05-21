@@ -1,19 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
@@ -49,16 +43,12 @@ namespace WebAPI
 
             // });
 
-            services.AddDbContext<CrayonContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
+            services.AddDbContext<CrayonContext>(options =>options.
+            UseSqlServer(Configuration.GetConnectionString("IdentityConnection")));
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-            {
-                options.User.RequireUniqueEmail = false;
-            })
-                .AddRoles<IdentityRole>()
-                .AddDefaultTokenProviders()
-                .AddEntityFrameworkStores<CrayonContext>();
+            services.AddIdentity<ApplicationUser, IdentityRole>()
+        .AddRoleManager<RoleManager<IdentityRole>>()
+        .AddEntityFrameworkStores<CrayonContext>();
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -93,6 +83,8 @@ namespace WebAPI
                     ClockSkew = TimeSpan.Zero
                 };
             });
+
+
 
             //Register the Swagger generator, defining 1 or more Swagger documents
             services.AddSwaggerGen(c =>
