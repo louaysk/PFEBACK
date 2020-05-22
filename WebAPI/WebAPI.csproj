@@ -6,11 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Migrations\20200521153323_ghhhh.cs" />
-    <Compile Remove="Migrations\20200521153323_ghhhh.Designer.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="3.0.0-preview-19075-0444" />
     <PackageReference Include="Microsoft.AspNetCore.App" Version="2.2.8" />
