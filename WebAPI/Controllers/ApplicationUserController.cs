@@ -64,9 +64,9 @@ namespace WebAPI.Controllers
             return accessToken;
         }
 
-        //Get : /api/crayon/getOgranisations
+        //Get : /api/crayon/getOrganizations
         [HttpGet]
-        [Route("getOgranisations")]
+        [Route("getOrganizations")]
         public async Task<IActionResult> getOrganizationsAsync()
         {
             var accessToken = await this.getTokenAsync();
@@ -77,7 +77,25 @@ namespace WebAPI.Controllers
 
             var request = new RestRequest("/api/v1/organizations", Method.GET);
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
-            request.AddParameter("scope", "CustomerApi");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+        }
+
+
+        //Get : /api/crayon/getClients
+        [HttpGet]
+        [Route("getClients")]
+        public async Task<IActionResult> getClientsAsync()
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/users", Method.GET);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
             var response = await client.ExecuteAsync(request);
             JObject jsonResponse = JObject.Parse(response.Content);
             return Ok(jsonResponse);
