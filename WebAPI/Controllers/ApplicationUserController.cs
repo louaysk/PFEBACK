@@ -39,23 +39,16 @@ namespace WebAPI.Controllers
 
         public async Task<String> getTokenAsync()
         {
-
-
-            var ClientId = "33731c54-94b6-430b-872f-be0ca64f7bd5";
-            var ClientSecret = "01e3ef62-5b54-4c4e-ba17-29e9992f4fb2";
-            var Username = "api@testcustomer.com";
-            var Password = "ePLE8129087%";
-
             var client = new RestClient("https://api.crayon.com/")
             {
-                Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret)
+                Authenticator = new HttpBasicAuthenticator(_appSettings.Crayon_Client_Id, _appSettings.Crayon_Client_Secret)
             };
 
             var request = new RestRequest("/api/v1/connect/token", Method.POST);
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
             request.AddParameter("grant_type", "password");
-            request.AddParameter("username", Username);
-            request.AddParameter("password", Password);
+            request.AddParameter("username", _appSettings.Crayon_Username);
+            request.AddParameter("password", _appSettings.Crayon_Password);
             request.AddParameter("scope", "CustomerApi");
             var response = await client.ExecuteAsync(request);
             JObject jsonResponse = JObject.Parse(response.Content);
