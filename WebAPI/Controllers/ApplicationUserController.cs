@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using Microsoft.AspNetCore.Http.Extensions;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using WebAPI.Models;
+using RestSharp;
+using RestSharp.Authenticators;
+using Newtonsoft.Json.Linq;
 
 namespace WebAPI.Controllers
 {
@@ -32,6 +36,48 @@ namespace WebAPI.Controllers
             _appSettings = appSettings.Value;
             _context = context;
         }
+
+        public async Task<String> getTokenAsync()
+        {
+
+
+            var ClientId = "33731c54-94b6-430b-872f-be0ca64f7bd5";
+            var ClientSecret = "01e3ef62-5b54-4c4e-ba17-29e9992f4fb2";
+            var Username = "api@testcustomer.com";
+            var Password = "ePLE8129087%";
+
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new HttpBasicAuthenticator(ClientId, ClientSecret)
+            };
+
+            var request = new RestRequest("/api/v1/connect/token", Method.POST);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.AddParameter("grant_type", "password");
+            request.AddParameter("username", Username);
+            request.AddParameter("password", Password);
+            request.AddParameter("scope", "CustomerApi");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            string obj = jsonResponse["AccessToken"].ToObject<string>();
+            string accessToken = obj.ToString();
+            return accessToken;
+        }
+
+        //Get : /api/crayon/getOgranisations
+        [HttpGet]
+        [Route("getOgranisations")]
+        public async Task<IActionResult> getOrgnisationsAsync()
+        {
+            var accessToken = await this.getTokenAsync();
+
+
+
+
+            return Ok(accessToken);
+        }
+
+
 
 
         public class Users_in_Role_ViewModel
