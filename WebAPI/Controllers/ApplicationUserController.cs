@@ -67,14 +67,20 @@ namespace WebAPI.Controllers
         //Get : /api/crayon/getOgranisations
         [HttpGet]
         [Route("getOgranisations")]
-        public async Task<IActionResult> getOrgnisationsAsync()
+        public async Task<IActionResult> getOrganizationsAsync()
         {
             var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
 
-
-
-
-            return Ok(accessToken);
+            var request = new RestRequest("/api/v1/organizations", Method.GET);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            request.AddParameter("scope", "CustomerApi");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
         }
 
 
