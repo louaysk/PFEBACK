@@ -49,7 +49,7 @@ namespace WebAPI.Controllers
         //Get : /api/crayon/getOrganizations
         [HttpGet]
         [Route("getOrganizations")]
-        public async Task<IActionResult> getOrganizationsAsync()
+        public async Task<IActionResult> getOrganizationsAsync(int page = 1, int pageSize = 10)
         {
             var accessToken = await this.getTokenAsync();
             var client = new RestClient("https://api.crayon.com/")
@@ -57,7 +57,7 @@ namespace WebAPI.Controllers
                 Authenticator = new JwtAuthenticator(accessToken)
             };
 
-            var request = new RestRequest("/api/v1/organizations", Method.GET);
+            var request = new RestRequest("/api/v1/organizations?page=" + page + "&pageSize=" + pageSize, Method.GET);
             var response = await client.ExecuteAsync(request);
             JObject jsonResponse = JObject.Parse(response.Content);
             return Ok(jsonResponse);
@@ -101,7 +101,7 @@ namespace WebAPI.Controllers
         //Get : /api/crayon/getUsers
         [HttpGet]
         [Route("getUsers")]
-        public async Task<IActionResult> getUsersAsync()
+        public async Task<IActionResult> getUsersAsync(int page = 1, int pageSize = 10)
         {
             var accessToken = await this.getTokenAsync();
             var client = new RestClient("https://api.crayon.com/")
@@ -109,7 +109,7 @@ namespace WebAPI.Controllers
                 Authenticator = new JwtAuthenticator(accessToken)
             };
 
-            var request = new RestRequest("/api/v1/users", Method.GET);
+            var request = new RestRequest("/api/v1/users?page=" + page + "&pageSize=" + pageSize, Method.GET);
             var response = await client.ExecuteAsync(request);
             JObject jsonResponse = JObject.Parse(response.Content);
             return Ok(jsonResponse);
@@ -199,14 +199,14 @@ namespace WebAPI.Controllers
                 Authenticator = new JwtAuthenticator(accessToken)
             };
 
-            var request = new RestRequest("/api/v1/billingstatements/?organizationId=" + organizationId, Method.GET);
+            var request = new RestRequest("/api/v1/billingstatements/?organizationId=" + organizationId , Method.GET);
             request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
             var response = await client.ExecuteAsync(request);
             JObject jsonResponse = JObject.Parse(response.Content);
             return Ok(jsonResponse);
         }
 
-
+        
 
 
         //Get : /api/crayon/Getinvoiceprofiles/5
@@ -228,7 +228,6 @@ namespace WebAPI.Controllers
         }
 
 
-
         //Get : /api/crayon/Getcustomertenants/5
         [HttpGet]
         [Route("Getcustomertenants/{organizationId}")]
@@ -246,6 +245,10 @@ namespace WebAPI.Controllers
             JObject jsonResponse = JObject.Parse(response.Content);
             return Ok(jsonResponse);
         }
+
+
+
+
 
 
     }
