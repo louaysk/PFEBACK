@@ -13,8 +13,12 @@ using WebAPI.Models;
 
 namespace WebAPI.Controllers
 {
+
+
+
+
     [Route("api/crayon")]
-    [ApiController]
+   // [ApiController]
     public class CrayonController : ControllerBase
     {
         private readonly ApplicationSettings _appSettings;
@@ -25,7 +29,7 @@ namespace WebAPI.Controllers
             _appSettings = appSettings.Value;
         }
 
-
+        [HttpGet("getTokenAsync")]
         public async Task<String> getTokenAsync()
         {
             var client = new RestClient("https://api.crayon.com/")
@@ -47,8 +51,8 @@ namespace WebAPI.Controllers
         }
 
         //Get : /api/crayon/getOrganizations
-        [HttpGet]
-        [Route("getOrganizations")]
+        [HttpGet("getOrganizations")]
+        
         public async Task<IActionResult> getOrganizationsAsync(int page = 1, int pageSize = 10)
         {
             var accessToken = await this.getTokenAsync();
@@ -246,6 +250,147 @@ namespace WebAPI.Controllers
             return Ok(jsonResponse);
         }
 
+
+        //Get : /api/crayon/Getagreementproducts/5
+        [HttpGet]
+        [Route("Getagreementproducts/{organizationId}")]
+        public async Task<IActionResult> GetagreementproductsAsync(string organizationId)
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/agreementproducts/?organizationId=" + organizationId, Method.GET);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+        }
+
+
+
+
+
+        //Get : /api/crayon/GetSubscriptions/5
+        [HttpGet]
+        [Route("GetSubscriptions/{organizationId}/{publisherCustomerId}")]
+        public async Task<IActionResult> GetSubscriptionsAsync(string organizationId ,string publisherCustomerId)
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/subscriptions/?organizationId=" + organizationId+ "&publisherCustomerId="+ publisherCustomerId, Method.GET);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+        }
+
+
+
+
+        //Get : /api/crayon/Getmanagementlinks/5
+        [HttpGet]
+        [Route("Getmanagementlinks/{resellerCustomerIds}/{subscriptionIds}")]
+        public async Task<IActionResult> GetmanagementlinksAsync(string resellerCustomerIds, string subscriptionIds)
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/managementlinks/?resellerCustomerIds=" + resellerCustomerIds + "&subscriptionIds=" + subscriptionIds, Method.GET);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+        }
+
+
+
+
+        //Get : /api/crayon/Getusagecostsbyorganization/5
+        [HttpGet]
+        [Route("Getusagecostsbyorganization")]
+        public async Task<IActionResult> GetusagecostsbyorganizationAsync(string organizationId)
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/UsageCost/organization/" + organizationId, Method.GET);
+            //request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+        }
+
+
+        //Get : /api/crayon/Getusagecostsbysubscription/5
+        [HttpGet]
+        [Route("Getusagecostsbysubscription")]
+        public async Task<IActionResult> Getusagecostsbysubscription(int resellerCustomerId, string subscriptionId, string currencyCode)
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/usagecost/resellerCustomer/"+ resellerCustomerId + "/subscription/"+ subscriptionId + "/currency/"+currencyCode, Method.GET);
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+
+        }
+
+
+
+        //Get : /api/crayon/Getusagecostsbysubcategory/5
+        [HttpGet]
+        [Route("Getusagecostsbysubcategory")]
+        public async Task<IActionResult> GetusagecostsbysubcategoryAsync(int resellerCustomerId, string subscriptionId, string category,string subcategory, string currencyCode)
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/usagecost/resellerCustomer/" + resellerCustomerId + "/subscription/" + subscriptionId + "/category/" + category + "/subcategory/"+ subcategory + "/currency/" + currencyCode , Method.GET);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+        }
+
+
+
+        //Get : /api/crayon/Getusagecostsbycategory/5
+        [HttpGet]
+        [Route("Getusagecostsbycategory")]
+        public async Task<IActionResult> GetusagecostsbycategoryAsync(int resellerCustomerId, string subscriptionId, string category, string currencyCode)
+        {
+            var accessToken = await this.getTokenAsync();
+            var client = new RestClient("https://api.crayon.com/")
+            {
+                Authenticator = new JwtAuthenticator(accessToken)
+            };
+
+            var request = new RestRequest("/api/v1/usagecost/resellerCustomer/" + resellerCustomerId + "/subscription/" + subscriptionId + "/category/" + category  + "/currency/" + currencyCode, Method.GET);
+            request.AddHeader("Content-Type", "application/x-www-form-urlencoded");
+            var response = await client.ExecuteAsync(request);
+            JObject jsonResponse = JObject.Parse(response.Content);
+            return Ok(jsonResponse);
+        }
 
 
 

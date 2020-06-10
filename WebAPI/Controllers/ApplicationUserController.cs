@@ -324,5 +324,105 @@ namespace WebAPI.Controllers
 
 
 
+
+
+        //class
+
+        public class UpdateUserPasswordApiModel
+        {
+            #region Public Properties
+            /// <summary>
+            /// The users current password
+            /// </summary>
+            public string CurrentPassword { get; set; }
+            /// <summary>
+            /// The users new password
+            /// </summary>
+            public string NewPassword { get; set; }
+            #endregion
+        }
+
+        //update user pass using UserEmail
+        [HttpPut]
+        [Route("updateauserpassword/{UserEmail}")]
+        public async Task<IActionResult> UpdateaUserPasswordAsync([FromRoute] string UserEmail,
+            UpdateUserPasswordApiModel model)
+        {
+
+
+
+          
+
+
+
+            try
+            {
+                #region Get User
+
+
+
+                // var user = await _userManager.GetUserAsync();
+                var user = await _userManager.FindByEmailAsync(UserEmail);
+                // If we have no user...
+                if (user == null)
+                {
+
+
+
+
+
+                    return BadRequest(new { message =" user dont exist" });
+                }
+
+
+
+                #region Update Password
+
+
+
+                var result = await _userManager.ChangePasswordAsync(user, model.CurrentPassword, model.NewPassword);
+
+
+
+                //return BuildJsonResponse(200, "SUCCESS", result, null);
+
+                return Ok(result);
+                    ;
+                #endregion
+
+
+
+            }
+
+
+
+            #endregion
+
+
+
+            catch (Exception ex)
+            {
+                throw
+                     ;
+
+
+
+            }
+
+
+
+
+        }
+
+
+        //udpdate
+
+
+
+
+
+
+
+
     }
 }
