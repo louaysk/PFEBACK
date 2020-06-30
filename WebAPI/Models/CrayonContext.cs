@@ -29,8 +29,19 @@ namespace WebAPI.Models
             modelBuilder.Entity<ApplicationRole>().HasMany(r => r.Users).WithOne().HasForeignKey(r => r.RoleId).IsRequired().OnDelete(DeleteBehavior.Cascade);
             modelBuilder.Entity<IdentityRole>().HasData(
               new { Id = "1", Name = "GlobalAdmin", NormalizedName = "GLOBALADMIN" },
+              //new { Id = "1", Name = "Achraf", NormalizedName = "Achraf" },
               new { Id = "2", Name = "Admin", NormalizedName = "ADMIN" }
              );
+
+            //modelBuilder.Entity<ApplicationUser>().HasData(
+                
+            //    new
+            //    {
+            //        FirstName= "GlobalAdmin",l
+
+            //    }
+            //    )
+
 
 
             //  modelBuilder.EnableAutoHistory(null);

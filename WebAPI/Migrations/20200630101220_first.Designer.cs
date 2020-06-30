@@ -10,7 +10,7 @@ using WebAPI.Models;
 namespace WebAPI.Migrations
 {
     [DbContext(typeof(CrayonContext))]
-    [Migration("20200522140157_first")]
+    [Migration("20200630101220_first")]
     partial class first
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)

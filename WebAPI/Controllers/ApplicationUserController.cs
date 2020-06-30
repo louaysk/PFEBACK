@@ -138,7 +138,7 @@ namespace WebAPI.Controllers
             {
 
                 var result = await _userManager.CreateAsync(applicationUser, model.Password);
-                await _userManager.AddToRoleAsync(applicationUser, "Admin");
+                await _userManager.AddToRoleAsync(applicationUser, "GlobalAdmin");
 
                 return Ok(result);
             }
