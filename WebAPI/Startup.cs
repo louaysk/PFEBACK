@@ -48,7 +48,7 @@ namespace WebAPI
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
         .AddRoleManager<RoleManager<IdentityRole>>()
-        .AddEntityFrameworkStores<CrayonContext>();
+        .AddEntityFrameworkStores<CrayonContext>().AddDefaultTokenProviders(); 
 
             services.Configure<IdentityOptions>(options =>
             {
@@ -138,6 +138,15 @@ namespace WebAPI
             {
                 endpoints.MapControllers();
             });
+            string[] origins = new string[]
+            {
+                "https://frondend-insomea.azurewebsites.net", "http://localhost:4200"
+            };
+            app.UseCors(builder =>
+                builder.WithOrigins(origins)
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+            );
         }
     }
 }

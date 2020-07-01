@@ -144,7 +144,7 @@ namespace WebAPI.Controllers
 
                 var result = await _userManager.CreateAsync(applicationUser, model.Password);
                 await _userManager.AddToRoleAsync(applicationUser, "GlobalAdmin");
-
+              await  SendUserEmailVerificationAsync(applicationUser);
                 return Ok(result);
             }
             catch (Exception ex)
@@ -478,6 +478,7 @@ namespace WebAPI.Controllers
 
 
                 // Generate an email verification code
+                user.TwoFactorEnabled = true;
                 var emailVerificationCode = await _userManager.GenerateEmailConfirmationTokenAsync(user);
 
 
@@ -542,13 +543,103 @@ namespace WebAPI.Controllers
             public string confirmationUrl { get; set; }
 
 
-
-
         }
 
 
 
 
+
+
+        [ApiExplorerSettings(IgnoreApi = true)]
+        [AllowAnonymous]
+        [Route("/VerifyEmail")]
+        [HttpGet]
+        public async Task<IActionResult> VerifyEmailAsync(string userId, string emailToken)
+        {
+
+            List<string> error = new List<string>();
+
+            try
+            {
+                var user = await _userManager.FindByIdAsync(userId);
+
+
+
+                // If the user is null
+                if (user == null)
+                // TODO: Nice UI
+                {
+                    return Ok(404);
+
+
+                }
+
+                else
+                if (user.EmailConfirmed == true)
+                {
+                    return Ok(200);
+
+
+
+                }
+
+
+
+
+                else
+                {
+                    // If we have the user...
+
+
+
+                    // Verify the email token
+                    var result = await _userManager.ConfirmEmailAsync(user, emailToken);
+
+
+
+                    // If succeeded...
+                    if (result.Succeeded)
+                    // TODO: Nice UI
+
+
+
+                    {
+
+
+                        return  Ok(200);
+
+
+
+                        // return Content("Email Verified :)");
+
+                    }
+
+
+
+                    else
+                    {
+                        return Ok(500);
+                    }
+                }
+            }
+
+
+
+            catch (Exception ex)
+            {
+                error.Add(ex.Message);
+
+
+                return Ok(500);
+            }
+
+
+
+
+
+            // TODO: Nice UI
+            // return Content("Invalid Email Verification Token :(");
+        }
 
 
 
