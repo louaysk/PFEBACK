@@ -17,6 +17,9 @@ using RestSharp;
 using RestSharp.Authenticators;
 using Newtonsoft.Json.Linq;
 using Microsoft.AspNet.OData;
+using System.Net.Http;
+using System.Web;
+using System.Net.Http.Headers;
 
 namespace WebAPI.Controllers
 {
@@ -24,11 +27,13 @@ namespace WebAPI.Controllers
     [ApiController]
     public class ApplicationUserController : ControllerBase
     {
-
+        private string azurefunctionlink = "https://prod-03.francecentral.logic.azure.com:443/workflows/b927bc534bb8420f982e2d1044fbae16/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=VYjSnFIYlE9Vg6__26AeGVcahaGCEavmopSlfQduYbw";
         private readonly CrayonContext _context;
         private UserManager<ApplicationUser> _userManager;
         private SignInManager<ApplicationUser> _singInManager;
         private readonly ApplicationSettings _appSettings;
+
+
 
         public ApplicationUserController(UserManager<ApplicationUser> userManager, SignInManager<ApplicationUser> signInManager, IOptions<ApplicationSettings> appSettings, CrayonContext context)
         {
@@ -38,7 +43,7 @@ namespace WebAPI.Controllers
             _context = context;
         }
 
-       
+
 
 
 
@@ -111,26 +116,26 @@ namespace WebAPI.Controllers
         //POST : /api/ApplicationUser/Register/Admin
         public async Task<Object> PostApplicationUser(RegisterUserModel model)
         {
-           // List<string> error = new List<string>();
-           // if (!ModelState.IsValid)
-           // {
+            // List<string> error = new List<string>();
+            // if (!ModelState.IsValid)
+            // {
             //    ModelState.Root.Children.ToList().ForEach(x =>
-              //  {
-                  //  x.Errors.ToList().ForEach(y =>
-                      //  error.Add(y.ErrorMessage)
-                   // );
-               // });
-               // return BadRequest(error);
+            //  {
+            //  x.Errors.ToList().ForEach(y =>
+            //  error.Add(y.ErrorMessage)
+            // );
+            // });
+            // return BadRequest(error);
 
-                 
-           // }
+
+            // }
             var applicationUser = new ApplicationUser() {
                 UserName = model.UserName,
                 Email = model.Email,
                 FirstName = model.FirstName,
                 lastName = model.lastName,
                 PhoneNumber = model.PhoneNumber,
-                
+
                 IsActive = true
             };
 
@@ -240,7 +245,7 @@ namespace WebAPI.Controllers
             {
                 if (!string.IsNullOrEmpty(admin.UserName))
                 {
-                user.UserName = admin.UserName;
+                    user.UserName = admin.UserName;
                 }
                 if (!string.IsNullOrEmpty(admin.Email))
                 {
@@ -249,7 +254,7 @@ namespace WebAPI.Controllers
                 if (!string.IsNullOrEmpty(admin.FirstName))
                 {
                     user.FirstName = admin.FirstName;
-                }if (!string.IsNullOrEmpty(admin.lastName))
+                } if (!string.IsNullOrEmpty(admin.lastName))
                 {
                     user.lastName = admin.lastName;
                 }
@@ -261,7 +266,7 @@ namespace WebAPI.Controllers
                 {
                     user.IsActive = admin.IsActive;
                 }
-                
+
                 await _userManager.UpdateAsync(user);
                 return Ok(user);
 
@@ -323,7 +328,7 @@ namespace WebAPI.Controllers
                 var securityToken = tokenHandler.CreateToken(tokenDescriptor);
                 var token = tokenHandler.WriteToken(securityToken);
 
-                return Ok(new { token,user.Id, user.UserName });
+                return Ok(new { token, user.Id, user.UserName });
             }
             else
                 return BadRequest(new { message = "Username or password is incorrect." });
@@ -359,7 +364,7 @@ namespace WebAPI.Controllers
 
 
 
-          
+
 
 
 
@@ -379,7 +384,7 @@ namespace WebAPI.Controllers
 
 
 
-                    return BadRequest(new { message =" user dont exist" });
+                    return BadRequest(new { message = " user dont exist" });
                 }
 
 
@@ -395,7 +400,7 @@ namespace WebAPI.Controllers
                 //return BuildJsonResponse(200, "SUCCESS", result, null);
 
                 return Ok(result);
-                    ;
+                ;
                 #endregion
 
 
@@ -423,7 +428,126 @@ namespace WebAPI.Controllers
         }
 
 
-        //udpdate
+
+
+
+
+        /// <summary>
+        /// Sends the given user a new verify email link
+        /// </summary>
+        /// <param name="user">The user to send the link to</param>
+        /// <returns></returns>
+        //[HttpPost]
+        //[Route("SendMail")]
+        private async Task<IActionResult> SendUserEmailVerificationAsync(ApplicationUser user)
+        {
+
+
+
+            //ErrorObject _emailTosenderror = new ErrorObject();
+
+
+
+            List<string> error = new List<string>();
+
+
+
+
+            try
+            {
+                var httpClient = new HttpClient();
+                emailTosend _emailTosend = new emailTosend();
+                //passing the template to use
+                //string template = "";
+                //var t = _context.Templates.Find(1);
+
+
+
+
+                //if (t != null)
+                //{
+                //    template = t.Code;
+                //}
+
+
+
+
+                // Get the user details
+                var userIdentity = await _userManager.FindByNameAsync(user.UserName);
+
+
+
+                // Generate an email verification code
+                var emailVerificationCode = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+
+
+
+                // TODO: Replace with APIRoutes that will contain the static routes to use
+                //fix sending problem code
+                var confirmationUrl = $"https://{Request.Host.Value}/VerifyEmail?userId={HttpUtility.UrlEncode(userIdentity.Id)}&emailToken={HttpUtility.UrlEncode(emailVerificationCode)}";
+
+
+
+                _emailTosend.confirmationUrl = confirmationUrl;
+                _emailTosend.Email = userIdentity.Email;
+                _emailTosend.FullName = user.FirstName;
+                Console.WriteLine(_emailTosend);
+
+
+
+                var json = Newtonsoft.Json.JsonConvert.SerializeObject(_emailTosend);
+
+
+
+                StringContent content = new StringContent(json);
+                content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+
+
+
+                // need to log this
+                var result = await httpClient.PostAsync(azurefunctionlink, content);
+
+
+
+                return Ok(200);
+
+
+
+                // Email the user the verification code
+                //await TaskIdoEmailSender.SendUserVerificationEmailAsync(user.FullName, userIdentity.Email, confirmationUrl, template);
+
+
+
+                // here to use the logic app to send the email 
+
+
+
+            }
+            catch (Exception ex)
+            {
+                error.Add(ex.Message);
+
+                return Ok(500);
+            }
+        }
+
+
+
+
+
+        public class emailTosend
+        {
+            public string FullName { get; set; }
+            public string Email { get; set; }
+            public string confirmationUrl { get; set; }
+
+
+
+
+        }
+
+
+
 
 
 
@@ -433,4 +557,13 @@ namespace WebAPI.Controllers
 
 
     }
+
+
+
+
+
+
+
+
+
 }
