@@ -68,7 +68,7 @@ namespace WebAPI.Controllers
         //Get : /api/crayon/getClients
         [HttpGet]
         [Route("getClients")]
-        public async Task<IActionResult> getClientsAsync(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> getClientsAsync(int page = 1, int pageSize = 10, string search="")
         {
             var accessToken = await this.getTokenAsync();
             var client = new RestClient("https://api.crayon.com/")
@@ -76,7 +76,7 @@ namespace WebAPI.Controllers
                 Authenticator = new JwtAuthenticator(accessToken)
             };
 
-            var request = new RestRequest("/api/v1/clients?page="+page+"&pageSize="+ pageSize, Method.GET);
+            var request = new RestRequest("/api/v1/clients?search="+ search + "&page=" + page+"&pageSize="+ pageSize, Method.GET);
             var response = await client.ExecuteAsync(request);
             JObject jsonResponse = JObject.Parse(response.Content);
             return Ok(jsonResponse);
@@ -103,7 +103,7 @@ namespace WebAPI.Controllers
         //Get : /api/crayon/getUsers
         [HttpGet]
         [Route("getUsers")]
-        public async Task<IActionResult> getUsersAsync(int page = 1, int pageSize = 10)
+        public async Task<IActionResult> getUsersAsync(int page = 1, int pageSize = 10 )
         {
             var accessToken = await this.getTokenAsync();
             var client = new RestClient("https://api.crayon.com/")
